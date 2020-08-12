@@ -35,7 +35,6 @@ const int CONNECTED_BIT = BIT0;
 
 static const char *TAG = "azure";
 
-extern int iothhub_devicetwin_init(void);
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
@@ -78,14 +77,14 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
-extern int iothub_client_device_twin_init();
+extern int Azure_s32Process();
 void azure_task(void *pvParameter)
 {
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
                         false, true, portMAX_DELAY);
     ESP_LOGI(TAG, "Connected to AP success!");
 
-    iothub_client_device_twin_init();
+    Azure_s32Process();
 
     vTaskDelete(NULL);
 }

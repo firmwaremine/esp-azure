@@ -22,4 +22,10 @@ config IOTHUB_CONNECTION_STRING
 		HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>
 		You can get this from the Azure IoT CLI or the Azure Portal.
 
+config DEVICE_ID
+	string "device ID"
+	default "device ID"
+	help
+		device ID.
+
 endmenu

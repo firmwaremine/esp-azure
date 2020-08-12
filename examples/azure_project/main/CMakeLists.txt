@@ -1,5 +1,6 @@
-set(COMPONENT_SRCS "azure_main.c"
-                "iothub_client_device_twin_and_methods_sample.c"
+set(COMPONENT_SRCS "main.c"
+                "AzureClient.c"
+                "AzureCore.c"
                 )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 
