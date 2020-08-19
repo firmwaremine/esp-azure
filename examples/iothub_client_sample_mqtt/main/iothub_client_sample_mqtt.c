@@ -15,6 +15,7 @@
 #include "iothubtransportmqtt.h"
 #include "iothub_client_options.h"
 #include "esp_system.h"
+#include "iothub.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -125,6 +126,7 @@ void connection_status_callback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_C
 {
     (void)printf("\n\nConnection Status result:%s, Connection Status reason: %s\n\n", MU_ENUM_TO_STRING(IOTHUB_CLIENT_CONNECTION_STATUS, result),
                  MU_ENUM_TO_STRING(IOTHUB_CLIENT_CONNECTION_STATUS_REASON, reason));
+
 }
 
 void iothub_client_sample_mqtt_run(void)
@@ -142,7 +144,7 @@ void iothub_client_sample_mqtt_run(void)
     callbackCounter = 0;
     int receiveContext = 0;
 
-    if (platform_init() != 0)
+    if (IoTHub_Init() != 0)
     {
         (void)printf("Failed to initialize the platform.\r\n");
     }
@@ -181,7 +183,7 @@ void iothub_client_sample_mqtt_run(void)
                 time_t current_time = 0;
                 do
                 {
-                    //(void)printf("iterator: [%d], callbackCounter: [%d]. \r\n", iterator, callbackCounter);
+                    (void)printf("iterator: [%d], callbackCounter: [%d]. \r\n", iterator, callbackCounter);
                     time(&current_time);
                     if ((MESSAGE_COUNT == 0 || iterator < MESSAGE_COUNT)
                         && iterator <= callbackCounter
@@ -190,6 +192,7 @@ void iothub_client_sample_mqtt_run(void)
                         temperature = minTemperature + (rand() % 10);
                         humidity = minHumidity +  (rand() % 20);
                         sprintf_s(msgText, sizeof(msgText), "{\"deviceId\":\"myFirstDevice\",\"windSpeed\":%.2f,\"temperature\":%.2f,\"humidity\":%.2f}", avgWindSpeed + (rand() % 4 + 2), temperature, humidity);
+                        (void)printf(msgText);
                         if ((message.messageHandle = IoTHubMessage_CreateFromByteArray((const unsigned char*)msgText, strlen(msgText))) == NULL)
                         {
                             (void)printf("ERROR: iotHubMessageHandle is NULL!\r\n");

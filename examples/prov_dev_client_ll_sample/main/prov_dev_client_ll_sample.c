@@ -73,6 +73,17 @@ static const char* PROXY_ADDRESS = "127.0.0.1";
 #define PROXY_PORT                  8888
 #define MESSAGES_TO_SEND            2
 #define TIME_BETWEEN_MESSAGES       2
+enum EVENT_TYPE
+{
+    MESSAGE, STATE
+};
+typedef struct EVENT_INSTANCE_TAG
+{
+    EVENT_TYPE type;
+    IOTHUB_MESSAGE_HANDLE messageHandle;
+    const char* stateString;
+    int trackingId; // For tracking the events within the user callback.
+} EVENT_INSTANCE;
 
 typedef struct CLIENT_SAMPLE_INFO_TAG
 {
@@ -105,7 +116,7 @@ static void registration_status_callback(PROV_DEVICE_REG_STATUS reg_status, void
     (void)printf("Provisioning Status: %s\r\n", MU_ENUM_TO_STRING(PROV_DEVICE_REG_STATUS, reg_status));
 }
 
-static void iothub_connection_status(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void* user_context)
+static void iothub_connection_status_callback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void* user_context)
 {
     (void)reason;
     if (user_context == NULL)
@@ -284,7 +295,7 @@ int prov_dev_client_ll_sample_run()
             iothub_info.stop_running = 0;
             iothub_info.connected = 0;
 
-            (void)IoTHubDeviceClient_LL_SetConnectionStatusCallback(device_ll_handle, iothub_connection_status, &iothub_info);
+            (void)IoTHubDeviceClient_LL_SetConnectionStatusCallback(device_ll_handle, iothub_connection_status_callback, &iothub_info);
 
             // Set any option that are neccessary.
             // For available options please see the iothub_sdk_options.md documentation
