@@ -453,7 +453,7 @@ static void Azure_s32InnerProcess(void)
     }
 }
 
-int Azure_s32Process(void)
+int AzCore_s32Process(void)
 {
     Azure_s32InnerProcess();
     return 0;

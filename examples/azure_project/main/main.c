@@ -16,13 +16,18 @@
 #include "esp_wifi.h"
 #include "esp_event_loop.h"
 #include "esp_log.h"
-
+#include "i2c_driver.h"
 #include "nvs_flash.h"
+#include "LCDIIC.h"
 
+/*
+ * WIFI configuration
+ */
 #define EXAMPLE_WIFI_SSID CONFIG_WIFI_SSID
 #define EXAMPLE_WIFI_PASS CONFIG_WIFI_PASSWORD
-
-/* FreeRTOS event group to signal when we are connected & ready to make a request */
+/*
+ * FreeRTOS event group to signal when we are connected & ready to make a request
+ */
 static EventGroupHandle_t wifi_event_group;
 
 #ifndef BIT0
@@ -66,26 +71,32 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
     wifi_config_t wifi_config = {
-        .sta = {
-            .ssid = EXAMPLE_WIFI_SSID,
-            .password = EXAMPLE_WIFI_PASS,
-        },
-    };
+                                    .sta = {
+                                        .ssid = EXAMPLE_WIFI_SSID,
+                                        .password = EXAMPLE_WIFI_PASS,
+                                    },
+                                };
     ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
-
-extern int Azure_s32Process();
+extern void Sensor_s32Process();
+extern int AzCore_s32Process();
 void azure_task(void *pvParameter)
 {
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
                         false, true, portMAX_DELAY);
     ESP_LOGI(TAG, "Connected to AP success!");
+    LCDIIC_vShowStringAt(3 ,1 , "Initializing....");
 
-    Azure_s32Process();
+    AzCore_s32Process();
 
+    vTaskDelete(NULL);
+}
+void sensor_task(void *pvParameter)
+{
+    Sensor_s32Process();
     vTaskDelete(NULL);
 }
 
@@ -98,10 +109,17 @@ void app_main()
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK( ret );
-
     initialise_wifi();
+    InitI2C();
+    LCDIIC_vInit();
 
-    if ( xTaskCreate(&azure_task, "azure_task", 1024 * 6, NULL, 5, NULL) != pdPASS ) {
+    if ( xTaskCreate(&azure_task, "azure_task", 1024 * 6, NULL, 5, NULL) != pdPASS )
+    {
         printf("create azure task failed\r\n");
     }
+    if ( xTaskCreate(&sensor_task, "sensor_task", 1024 * 6, NULL, 5, NULL) != pdPASS )
+    {
+        printf("create sensor task failed\r\n");
+    }
+
 }
